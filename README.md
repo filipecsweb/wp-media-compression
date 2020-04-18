@@ -1,10 +1,5 @@
 # Plugin WordPress: Otimização de Imagens
 
-## Descrição
-Otimiza imagens, em segundo plano, da biblioteca de mídia do WP.  
-Extensões suportadas: jpeg, jpg, png, gif, webp.  
-O plugin não possui página de opções. Basta instalar e ativar, mas veja requerimentos abaixo.
-
 ## Requerimentos
 * PHP 7.2+
 * WordPress 5.0+
