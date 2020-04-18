@@ -26,12 +26,10 @@ class SS_Media_Compression {
 	private static $max_height = 1080;
 
 	public function __construct() {
-		add_action( 'init', function () {
-			if ( class_exists( 'Spatie\ImageOptimizer\OptimizerChainFactory' ) ) {
-				add_filter( 'wp_generate_attachment_metadata', [ 'SS_Media_Compression', 'wp_generate_attachment_metadata_callback' ], 10, 2 );
-				add_filter( 'wp_update_attachment_metadata', [ 'SS_Media_Compression', 'wp_update_attachment_metadata_callback' ], 10, 2 );
-			}
-		} );
+		require_once 'vendor/autoload.php';
+
+		add_filter( 'wp_generate_attachment_metadata', [ 'SS_Media_Compression', 'wp_generate_attachment_metadata_callback' ], 10, 2 );
+		add_filter( 'wp_update_attachment_metadata', [ 'SS_Media_Compression', 'wp_update_attachment_metadata_callback' ], 10, 2 );
 	}
 
 	/**
