@@ -1,5 +1,7 @@
 # Plugin WordPress: Otimização de Imagens
 
+Otimize as imagens do WordPress de forma ilimitada e completamente, sem pagar.
+
 ## Requerimentos
 * PHP 7.2+
 * WordPress 5.0+
