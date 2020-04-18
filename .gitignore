@@ -1,0 +1,9 @@
+#F
+/.eval-*
+/*.sh
+.DS_Store
+.env
+
+#D
+__MACOSX/
+node_modules/
