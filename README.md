@@ -1,6 +1,6 @@
 # Plugin WordPress: Otimização de Imagens
 
-Otimize as imagens do WordPress de forma ilimitada e completamente, sem pagar.
+Otimize e redimensione as imagens do WordPress de forma ilimitada e completamente, sem pagar.
 
 ## Requerimentos
 * PHP 7.2+
@@ -25,7 +25,9 @@ apt-get install gifsicle -y; \
 apt-get install webp -y
 ```
 
-* Desde que as bibliotecas acima estejam instaladas e funcionando, basta instalar e ativar o plugin para que as imagens comecem a ser automaticamente otimizadas.
+* Desde que as bibliotecas acima estejam instaladas e funcionando, *basta instalar e ativar o plugin* para que as imagens comecem a ser automaticamente otimizadas e redimensionadas.
+
+* Qualquer imagem com mais de 1920px de largura ou mais de 1080px de altura será redimensionada para que não ultrapasse os limites citados.
 
 * Se quiser otimizar imagens que já estavam na biblioteca, basta utilizar o WP-CLI da seguinte forma:
 ```
