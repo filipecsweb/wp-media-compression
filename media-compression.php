@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:  SS - Otimização de Imagens
- * Description:  Otimiza imagens, em segundo plano, da biblioteca de mídia do WP.
+ * Description:  Otimiza imagens da biblioteca de mídia do WP.
  * Author:       Filipe Seabra
  * Author URI:   https://filipecsweb.com.br
  * License:      GPLv3
