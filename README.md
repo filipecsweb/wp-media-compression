@@ -1,6 +1,6 @@
 # Plugin WordPress: Otimização de Imagens
 
-Otimize e redimensione as imagens do WordPress de forma ilimitada e completamente, sem pagar.
+Otimize e redimensione as imagens do WordPress de forma ilimitada e em segundo plano/background.
 
 ## Requerimentos
 * PHP 7.2+
