@@ -213,7 +213,7 @@ class SS_Media_Compression {
 
 		set_transient( "ssmc_new_metadata_$attachment_id", $new_metadata );
 
-		wp_schedule_single_event( current_time( 'timestamp' ), "ssmc_delete_transient", [ $attachment_id ] );
+		wp_schedule_single_event( current_time( 'timestamp' ) + 30, "ssmc_delete_transient", [ $attachment_id ] );
 
 		wp_update_attachment_metadata( $attachment_id, $new_metadata );
 
