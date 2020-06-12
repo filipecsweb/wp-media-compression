@@ -37,6 +37,7 @@ class SS_Media_Compression {
 		add_filter( 'wp_generate_attachment_metadata', [ 'SS_Media_Compression', 'wp_generate_attachment_metadata_callback' ], 10, 2 );
 		add_action( 'wp_ajax_ssmc_maybe_compress_attachment', [ 'SS_Media_Compression', 'ssmc_maybe_compress_attachment_callback' ] );
 		add_action( 'wp_ajax_nopriv_ssmc_maybe_compress_attachment', [ 'SS_Media_Compression', 'ssmc_maybe_compress_attachment_callback' ] );
+		add_action( 'ssmc_delete_transient', [ 'SS_Media_Compression', 'ssmc_delete_transient_callback' ] );
 	}
 
 	/**
@@ -85,11 +86,7 @@ class SS_Media_Compression {
 		// In localhost, for instance, the remote request is so fast that we have to rely on a transient to make sure we return the correct metadata.
 		$new_metadata = get_transient( "ssmc_new_metadata_$attachment_id" );
 
-		delete_transient( "ssmc_new_metadata_$attachment_id" );
-
-		if ( $new_metadata ) {
-			$metadata = $new_metadata;
-		}
+		$metadata = $new_metadata ? $new_metadata : $metadata;
 
 		return $metadata;
 	}
@@ -122,6 +119,15 @@ class SS_Media_Compression {
 
 			wp_send_json_error( $wp_error );
 		}
+	}
+
+	/**
+	 * Hooked into `ssmc_delete_transient` action hook.
+	 *
+	 * @param int $attachment_id
+	 */
+	public static function ssmc_delete_transient_callback( $attachment_id ) {
+		delete_transient( "ssmc_new_metadata_{$attachment_id}" );
 	}
 
 	/**
@@ -205,9 +211,11 @@ class SS_Media_Compression {
 
 		$new_metadata = wp_generate_attachment_metadata( $attachment_id, $original_file );
 
-		wp_update_attachment_metadata( $attachment_id, $new_metadata );
-
 		set_transient( "ssmc_new_metadata_$attachment_id", $new_metadata );
+
+		wp_schedule_single_event( current_time( 'timestamp' ), "ssmc_delete_transient", [ $attachment_id ] );
+
+		wp_update_attachment_metadata( $attachment_id, $new_metadata );
 
 		/**
 		 * Optimize file subsizes after metadata generation, because when generating metadata the subsizes are recreated anyway.
