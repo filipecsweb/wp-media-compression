@@ -82,6 +82,7 @@ class SS_Media_Compression {
 
 		wp_remote_post( $url, $args );
 
+		// In localhost, for instance, the remote request is so fast that we have to rely on a transient to make sure we return the correct metadata.
 		$new_metadata = get_transient( "ssmc_new_metadata_$attachment_id" );
 
 		delete_transient( "ssmc_new_metadata_$attachment_id" );
@@ -166,7 +167,7 @@ class SS_Media_Compression {
 		// Optimize original file.
 		$optimizer = ( new OptimizerChain() )
 			->addOptimizer( new Jpegoptim( [ // @link https://www.kokkonen.net/tjko/src/man/jpegoptim.txt
-				'-m80',
+				'-m75',
 				'--strip-all',
 				'--all-progressive',
 				'--quiet',
@@ -203,6 +204,8 @@ class SS_Media_Compression {
 		remove_filter( 'wp_generate_attachment_metadata', [ 'SS_Media_Compression', 'wp_generate_attachment_metadata_callback' ], 10 );
 
 		$new_metadata = wp_generate_attachment_metadata( $attachment_id, $original_file );
+
+		wp_update_attachment_metadata( $attachment_id, $new_metadata );
 
 		set_transient( "ssmc_new_metadata_$attachment_id", $new_metadata );
 
