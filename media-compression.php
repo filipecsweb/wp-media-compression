@@ -173,7 +173,7 @@ class SS_Media_Compression {
 		// Optimize original file.
 		$optimizer = ( new OptimizerChain() )
 			->addOptimizer( new Jpegoptim( [ // @link https://www.kokkonen.net/tjko/src/man/jpegoptim.txt
-				'-m75',
+				'-m80',
 				'--strip-all',
 				'--all-progressive',
 				'--quiet',
