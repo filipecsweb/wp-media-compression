@@ -1,14 +1,19 @@
 {
-    "name": "filipecsweb/wp-media-compression",
-    "type": "project",
-    "require": {
-        "spatie/image-optimizer": "^1.2"
-    },
-    "license": "GPLv3",
-    "authors": [
-        {
-            "name": "Filipe Seabra",
-            "email": "me@filipecsweb.com.br"
-        }
-    ]
+  "name": "filipecsweb/wp-media-compression",
+  "type": "project",
+  "require": {
+    "spatie/image-optimizer": "^1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "SS\\": ""
+    }
+  },
+  "license": "GPLv3",
+  "authors": [
+    {
+      "name": "Filipe Seabra",
+      "email": "me@filipecsweb.com.br"
+    }
+  ]
 }

@@ -11,6 +11,7 @@ class ComposerStaticInitd87fd17a5f0996be1514ac159d02aa18
         array (
             'Symfony\\Component\\Process\\' => 26,
             'Spatie\\ImageOptimizer\\' => 22,
+            'SS\\' => 3,
         ),
         'P' => 
         array (
@@ -26,6 +27,10 @@ class ComposerStaticInitd87fd17a5f0996be1514ac159d02aa18
         'Spatie\\ImageOptimizer\\' => 
         array (
             0 => __DIR__ . '/..' . '/spatie/image-optimizer/src',
+        ),
+        'SS\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/',
         ),
         'Psr\\Log\\' => 
         array (
@@ -45,6 +50,8 @@ class ComposerStaticInitd87fd17a5f0996be1514ac159d02aa18
         'Psr\\Log\\Test\\DummyTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/DummyTest.php',
         'Psr\\Log\\Test\\LoggerInterfaceTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
         'Psr\\Log\\Test\\TestLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/TestLogger.php',
+        'SS\\MediaCompression\\Functions' => __DIR__ . '/../..' . '/Functions.php',
+        'SS\\MediaCompression\\MediaCompression' => __DIR__ . '/../..' . '/MediaCompression.php',
         'Spatie\\ImageOptimizer\\DummyLogger' => __DIR__ . '/..' . '/spatie/image-optimizer/src/DummyLogger.php',
         'Spatie\\ImageOptimizer\\Image' => __DIR__ . '/..' . '/spatie/image-optimizer/src/Image.php',
         'Spatie\\ImageOptimizer\\Optimizer' => __DIR__ . '/..' . '/spatie/image-optimizer/src/Optimizer.php',
