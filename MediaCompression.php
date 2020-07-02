@@ -1,17 +1,10 @@
 <?php
-/**
- * Plugin Name:  SS - Otimização de Imagens
- * Description:  Otimiza e redimensiona imagens da biblioteca de mídia do WP.
- * Author:       Filipe Seabra
- * Author URI:   https://filipecsweb.com.br
- * License:      GPLv3
- * License URI:  https://www.gnu.org/licenses/gpl-3.0.html
- * Text Domain: ss-media-compression
- * Version: 1.0.0.00
- *
- * @link https://github.com/spatie/image-optimizer
- */
 
+namespace SS\MediaCompression;
+
+defined( 'ABSPATH' ) || exit;
+
+use Exception;
 use Spatie\ImageOptimizer\OptimizerChain;
 use Spatie\ImageOptimizer\Optimizers\Cwebp;
 use Spatie\ImageOptimizer\Optimizers\Gifsicle;
@@ -19,25 +12,24 @@ use Spatie\ImageOptimizer\Optimizers\Jpegoptim;
 use Spatie\ImageOptimizer\Optimizers\Optipng;
 use Spatie\ImageOptimizer\Optimizers\Pngquant;
 use Spatie\ImageOptimizer\Optimizers\Svgo;
+use WP_Error;
 
-class SS_Media_Compression {
+class MediaCompression {
 
 	/**
-	 * @var    SS_Media_Compression $instance Instance of this class.
+	 * @var MediaCompression $instance
 	 */
 	private static $instance;
 
-	private static $max_width = 1920;
-
-	private static $max_height = 1080;
-
 	public function __construct() {
-		require_once 'vendor/autoload.php';
+		$this->set_hooks();
+	}
 
-		add_filter( 'wp_generate_attachment_metadata', [ 'SS_Media_Compression', 'wp_generate_attachment_metadata_callback' ], 10, 2 );
-		add_action( 'wp_ajax_ssmc_maybe_compress_attachment', [ 'SS_Media_Compression', 'ssmc_maybe_compress_attachment_callback' ] );
-		add_action( 'wp_ajax_nopriv_ssmc_maybe_compress_attachment', [ 'SS_Media_Compression', 'ssmc_maybe_compress_attachment_callback' ] );
-		add_action( 'ssmc_delete_transient', [ 'SS_Media_Compression', 'ssmc_delete_transient_callback' ] );
+	private function set_hooks() {
+		add_filter( 'wp_generate_attachment_metadata', [ 'SS\MediaCompression\MediaCompression', 'wp_generate_attachment_metadata_callback' ], 10, 2 );
+		add_action( 'wp_ajax_ssmc_maybe_compress_attachment', [ 'SS\MediaCompression\MediaCompression', 'ssmc_maybe_compress_attachment_callback' ] );
+		add_action( 'wp_ajax_nopriv_ssmc_maybe_compress_attachment', [ 'SS\MediaCompression\MediaCompression', 'ssmc_maybe_compress_attachment_callback' ] );
+		add_action( 'ssmc_update_attachment_metadata', [ 'SS\MediaCompression\MediaCompression', 'ssmc_update_attachment_metadata_callback' ], 10, 2 );
 	}
 
 	/**
@@ -57,12 +49,10 @@ class SS_Media_Compression {
 			return $metadata;
 		}*/
 
-		$body = compact( 'metadata', 'attachment_id' );
-
 		$args = [
-			'timeout'   => 0.01,
+			'timeout'   => 0.01, // Set to 30 in order to perform tests.
 			'blocking'  => false, // Set to TRUE in order to perform tests.
-			'body'      => $body,
+			'body'      => compact( 'metadata', 'attachment_id' ),
 			'sslverify' => apply_filters( 'https_local_ssl_verify', false ),
 			'cookies'   => isset( $_COOKIE ) && is_array( $_COOKIE ) ? $_COOKIE : array(),
 		];
@@ -82,11 +72,6 @@ class SS_Media_Compression {
 //		exit;
 
 		wp_remote_post( $url, $args );
-
-		// In localhost, for instance, the remote request is so fast that we have to rely on a transient to make sure we return the correct metadata.
-		$new_metadata = get_transient( "ssmc_new_metadata_$attachment_id" );
-
-		$metadata = $new_metadata ? $new_metadata : $metadata;
 
 		return $metadata;
 	}
@@ -110,7 +95,13 @@ class SS_Media_Compression {
 				throw new Exception( sprintf( __( "Post %d is not an attachment.", 'ss-media-compression' ), intval( $args['attachment_id'] ) ) );
 			}
 
-			$response = self::compress( $args['attachment_id'], $args['metadata'] );
+			$compressed = get_post_meta( $args['attachment_id'], 'ssmc_compressed', true );
+
+			if ( '1' === $compressed ) {
+				$response = sprintf( __( "Attachment %d is already compressed", 'ss-media-compression' ), intval( $args['attachment_id'] ) );
+			} else {
+				$response = self::compress( $args['attachment_id'], $args['metadata'] );
+			}
 
 			wp_send_json_success( $response );
 		} catch ( Exception $e ) {
@@ -122,12 +113,13 @@ class SS_Media_Compression {
 	}
 
 	/**
-	 * Hooked into `ssmc_delete_transient` action hook.
+	 * Hooked into `ssmc_update_attachment_metadata` action hook.
 	 *
 	 * @param int $attachment_id
+	 * @param array $new_metadata
 	 */
-	public static function ssmc_delete_transient_callback( $attachment_id ) {
-		delete_transient( "ssmc_new_metadata_{$attachment_id}" );
+	public static function ssmc_update_attachment_metadata_callback( $attachment_id, $new_metadata ) {
+		wp_update_attachment_metadata( $attachment_id, $new_metadata );
 	}
 
 	/**
@@ -152,11 +144,11 @@ class SS_Media_Compression {
 		$image = wp_get_image_editor( $original_file );
 
 		if ( is_wp_error( $image ) ) {
-			throw new Exception( $image->get_error_message() );
+			throw new Exception( 'Line ' . __LINE__ . ': ' . $image->get_error_message() );
 		}
 
-		$mw = self::$max_width;
-		$mh = self::$max_height;
+		$mw = (int) Functions::get_option( 'max_width' );
+		$mh = (int) Functions::get_option( 'max_height' );
 
 		$dimensions = $image->get_size();
 
@@ -164,7 +156,7 @@ class SS_Media_Compression {
 			$result = $image->resize( $mw, $mh, false );
 
 			if ( is_wp_error( $result ) ) {
-				throw new Exception( $result->get_error_message() );
+				throw new Exception( 'Line ' . __LINE__ . ': ' . $result->get_error_message() );
 			}
 
 			$image->save( $original_file );
@@ -173,7 +165,7 @@ class SS_Media_Compression {
 		// Optimize original file.
 		$optimizer = ( new OptimizerChain() )
 			->addOptimizer( new Jpegoptim( [ // @link https://www.kokkonen.net/tjko/src/man/jpegoptim.txt
-				'-m80',
+				'-m' . Functions::get_option( 'jpeg_quality' ),
 				'--strip-all',
 				'--all-progressive',
 				'--quiet',
@@ -207,15 +199,9 @@ class SS_Media_Compression {
 		/**
 		 * Update media metadata.
 		 */
-		remove_filter( 'wp_generate_attachment_metadata', [ 'SS_Media_Compression', 'wp_generate_attachment_metadata_callback' ], 10 );
+		remove_filter( 'wp_generate_attachment_metadata', [ 'SS\MediaCompression\MediaCompression', 'wp_generate_attachment_metadata_callback' ], 10 );
 
 		$new_metadata = wp_generate_attachment_metadata( $attachment_id, $original_file );
-
-		set_transient( "ssmc_new_metadata_$attachment_id", $new_metadata );
-
-		wp_schedule_single_event( current_time( 'timestamp' ) + 90, "ssmc_delete_transient", [ $attachment_id ] );
-
-		wp_update_attachment_metadata( $attachment_id, $new_metadata );
 
 		/**
 		 * Optimize file subsizes after metadata generation, because when generating metadata the subsizes are recreated anyway.
@@ -241,18 +227,21 @@ class SS_Media_Compression {
 			}
 
 			$optimizer
-				->setTimeout( 30 )
+				->setTimeout( 15 )
 				->optimize( $size_file );
 		}
 
-		// Return.
+		update_post_meta( $attachment_id, 'ssmc_compressed', '1' );
+
+		wp_schedule_single_event( time() + 30, "ssmc_update_attachment_metadata", [ $attachment_id, $new_metadata ] );
+
 		return $new_metadata;
 	}
 
 	/**
 	 * Hooked into `plugins_loaded` action hook.
 	 *
-	 * @return  SS_Media_Compression  Class instance.
+	 * @return MediaCompression  Class instance.
 	 */
 	public static function get_instance() {
 		if ( ! ( self::$instance instanceof self ) ) {
@@ -262,5 +251,3 @@ class SS_Media_Compression {
 		return self::$instance;
 	}
 }
-
-add_action( 'plugins_loaded', [ 'SS_Media_Compression', 'get_instance' ] );

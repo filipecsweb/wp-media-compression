@@ -17,6 +17,8 @@ return array(
     'Psr\\Log\\Test\\DummyTest' => $vendorDir . '/psr/log/Psr/Log/Test/DummyTest.php',
     'Psr\\Log\\Test\\LoggerInterfaceTest' => $vendorDir . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
     'Psr\\Log\\Test\\TestLogger' => $vendorDir . '/psr/log/Psr/Log/Test/TestLogger.php',
+    'SS\\MediaCompression\\Functions' => $baseDir . '/Functions.php',
+    'SS\\MediaCompression\\MediaCompression' => $baseDir . '/MediaCompression.php',
     'Spatie\\ImageOptimizer\\DummyLogger' => $vendorDir . '/spatie/image-optimizer/src/DummyLogger.php',
     'Spatie\\ImageOptimizer\\Image' => $vendorDir . '/spatie/image-optimizer/src/Image.php',
     'Spatie\\ImageOptimizer\\Optimizer' => $vendorDir . '/spatie/image-optimizer/src/Optimizer.php',
