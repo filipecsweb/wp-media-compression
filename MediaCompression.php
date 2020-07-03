@@ -13,6 +13,7 @@ use Spatie\ImageOptimizer\Optimizers\Optipng;
 use Spatie\ImageOptimizer\Optimizers\Pngquant;
 use Spatie\ImageOptimizer\Optimizers\Svgo;
 use WP_Error;
+use SS\MediaCompression\Admin;
 
 class MediaCompression {
 
@@ -22,6 +23,8 @@ class MediaCompression {
 	private static $instance;
 
 	public function __construct() {
+		new Admin\Hooks();
+
 		$this->set_hooks();
 	}
 
@@ -100,10 +103,14 @@ class MediaCompression {
 			if ( '1' === $compressed ) {
 				$response = sprintf( __( "Attachment %d is already compressed", 'ss-media-compression' ), intval( $args['attachment_id'] ) );
 			} else {
+				if ( '0' !== $compressed ) {
+					update_post_meta( $args['attachment_id'], 'ssmc_compressed', '0' );
+				}
+
 				$response = self::compress( $args['attachment_id'], $args['metadata'] );
 			}
 
-			wp_send_json_success( $response );
+			wp_send_json_success( $response ?? [] );
 		} catch ( Exception $e ) {
 			// Log here.
 			$wp_error->add( $e->getCode(), $e->getMessage() );
@@ -193,7 +200,7 @@ class MediaCompression {
 			] ) );
 
 		$optimizer
-			->setTimeout( 30 )
+			->setTimeout( 60 )
 			->optimize( $original_file );
 
 		/**
@@ -227,7 +234,7 @@ class MediaCompression {
 			}
 
 			$optimizer
-				->setTimeout( 15 )
+				->setTimeout( 30 )
 				->optimize( $size_file );
 		}
 
